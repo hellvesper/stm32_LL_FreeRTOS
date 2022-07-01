@@ -175,8 +175,8 @@ void Slave_Complete_Callback(void) {
     /* Check Command code & prepare data for transmit (moved to receive callback)*/
 
     /* Clear and Reset process variables and arrays */
-    ubSlaveReceiveIndex = 0;
-    ubSlaveReceiveComplete = 0;
+//    ubSlaveReceiveIndex = 0;
+//    ubSlaveReceiveComplete = 0;
     RxBytesCounter = 0;
 //    FlushBuffer8(aSlaveReceiveBuffer);
 }

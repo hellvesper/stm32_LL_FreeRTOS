@@ -167,6 +167,7 @@ void TIM1_UP_IRQHandler(void) {
   */
 void I2C1_EV_IRQHandler(void) {
     /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
     /* Check ADDR flag value in ISR register */
     if (LL_I2C_IsActiveFlag_ADDR(I2C1)) {
         /* Verify the slave transfer direction, a read direction, Slave enters receiver mode */
@@ -217,7 +218,7 @@ void I2C1_EV_IRQHandler(void) {
     /* USER CODE END I2C1_EV_IRQn 0 */
 
     /* USER CODE BEGIN I2C1_EV_IRQn 1 */
-
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
     /* USER CODE END I2C1_EV_IRQn 1 */
 }
 
