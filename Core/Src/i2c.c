@@ -21,6 +21,13 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
+#define CMD_1 0xA0
+#define CMD_2 0xB0
+#define CMD_3 0xC0
+#define CMD_4 0xF0
+
+#define CHANNELS 16
+
 LL_I2C_InitTypeDef I2C_InitStruct = {0};
 /**
   * @brief Variables related to Slave process
@@ -29,12 +36,13 @@ const char *aSlaveInfo[] = {
         "STM32F103RBT6",
         "1.2.3"};
 
-uint8_t aSlaveReceiveBuffer[0xF] = {0}; // receive buf
-uint8_t pSlaveTransmitBuffer[0xF] = {0};   // transmit buf
+uint8_t aSlaveReceiveBuffer[CHANNELS] = {0}; // receive buf
+uint8_t pSlaveTransmitBuffer[CHANNELS] = {0};   // transmit buf
 __IO uint8_t ubSlaveNbDataToTransmit = 0;   // transmit bytes index
 //uint8_t       ubSlaveInfoIndex          = 0xFF;// sample data index
 __IO uint8_t ubSlaveReceiveIndex = 0;   // receive bytes index
 __IO uint8_t ubSlaveReceiveComplete = 0;
+__IO uint8_t RxBytesCounter = 0;
 __IO uint8_t lastCMD = 0;
 
 uint8_t Buffercmp8(uint8_t *pBuffer1, uint8_t *pBuffer2, uint8_t BufferLength);
@@ -138,16 +146,20 @@ void I2C_EvHandler() {
   * @retval None
   */
 void Slave_Ready_To_Transmit_Callback(void) {
-    if (ubSlaveNbDataToTransmit > 0) {
+    static uint8_t bCount = 0;
+    if (bCount < ubSlaveNbDataToTransmit) {
         /* Send the Byte requested by the Master */
-        LL_I2C_TransmitData8(I2C1, pSlaveTransmitBuffer[ubSlaveNbDataToTransmit]);
+        LL_I2C_TransmitData8(I2C1, pSlaveTransmitBuffer[bCount]);
 
-        ubSlaveNbDataToTransmit--;
+        bCount++;
     } else {
         /* Send the NULL Byte until Master stop the communication */
         /* This is needed due to Master don't know how many data slave will sent */
+        ubSlaveNbDataToTransmit = 0;
+        bCount = 0;
         LL_I2C_TransmitData8(I2C1, 0x11);
     }
+
 }
 
 /**
@@ -161,30 +173,31 @@ void Slave_Reception_Callback(void) {
     RXNE flag is cleared by reading data in RXDR register */
 //    aSlaveReceiveBuffer[ubSlaveReceiveIndex] = LL_I2C_ReceiveData8(I2C1);
     lastCMD = LL_I2C_ReceiveData8(I2C1);
+    RxBytesCounter++;
 
     /* Check Command code & prepare data for transmit*/
     switch (lastCMD) {
-        case (uint8_t)0xA0:
-        {
+        case (uint8_t) CMD_1: {
             pSlaveTransmitBuffer[0] = 0xAA;
-            __NOP();
-            ubSlaveNbDataToTransmit = (uint8_t) 1;
+            ubSlaveNbDataToTransmit = 1;
         }
             break;
-        case (uint8_t)0xB0:
+        case (uint8_t) CMD_2:
             pSlaveTransmitBuffer[0] = 0xBB;
             ubSlaveNbDataToTransmit = 1;
             break;
-        case (uint8_t)0xC0:
-            for (ubSlaveNbDataToTransmit = 0; ubSlaveNbDataToTransmit < 0xF; ++ubSlaveNbDataToTransmit) {
+        case (uint8_t) CMD_3:
+            for (ubSlaveNbDataToTransmit = 0; ubSlaveNbDataToTransmit < 0x10; ++ubSlaveNbDataToTransmit) {
                 pSlaveTransmitBuffer[ubSlaveNbDataToTransmit] = ubSlaveNbDataToTransmit;
             }
-            break;
-        default:
             __NOP();
             break;
+        default:
+            ubSlaveNbDataToTransmit = 0;
+            break;
     }
-    ubSlaveReceiveIndex++;
+//    ubSlaveReceiveIndex++;
+    __NOP();
 }
 
 /**
@@ -213,7 +226,8 @@ void Slave_Complete_Callback(void) {
     /* Clear and Reset process variables and arrays */
     ubSlaveReceiveIndex = 0;
     ubSlaveReceiveComplete = 0;
-    FlushBuffer8(aSlaveReceiveBuffer);
+    RxBytesCounter = 0;
+//    FlushBuffer8(aSlaveReceiveBuffer);
 }
 
 /**
