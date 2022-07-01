@@ -33,13 +33,20 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-
+extern LL_I2C_InitTypeDef I2C_InitStruct;
+//extern uint8_t RxBuf[16] = {0};
+//extern uint8_t TxBuf[16] = {0};
 /* USER CODE END Private defines */
 
 void MX_I2C1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void I2C_EvHandler(void);
+/* IRQ Handler treatment functions */
+void Slave_Ready_To_Transmit_Callback(void);
+void Slave_Reception_Callback(void);
+void Slave_Complete_Callback(void);
+void Error_Callback(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

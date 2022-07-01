@@ -160,7 +160,7 @@ void StartTicksPerSec(void *argument) {
     /* USER CODE BEGIN StartTicksPerSec */
     /* Infinite loop */
     for (;;) {
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+//        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
         osDelay(1000 / portTICK_PERIOD_MS);
     }
     /* USER CODE END StartTicksPerSec */
