@@ -32,17 +32,17 @@ LL_I2C_InitTypeDef I2C_InitStruct = {0};
 /**
   * @brief Variables related to Slave process
   */
-const char *aSlaveInfo[] = {
-        "STM32F103RBT6",
-        "1.2.3"};
+//const char *aSlaveInfo[] = {
+//        "STM32F103RBT6",
+//        "1.2.3"};
 
-uint8_t aSlaveReceiveBuffer[CHANNELS] = {0}; // receive buf
+//uint8_t aSlaveReceiveBuffer[CHANNELS] = {0}; // receive buf
 uint8_t pSlaveTransmitBuffer[CHANNELS] = {0};   // transmit buf
 __IO uint8_t ubSlaveNbDataToTransmit = 0;   // transmit bytes index
 //uint8_t       ubSlaveInfoIndex          = 0xFF;// sample data index
-__IO uint8_t ubSlaveReceiveIndex = 0;   // receive bytes index
-__IO uint8_t ubSlaveReceiveComplete = 0;
-__IO uint8_t RxBytesCounter = 0;
+//__IO uint8_t ubSlaveReceiveIndex = 0;   // receive bytes index
+//__IO uint8_t ubSlaveReceiveComplete = 0;
+__IO uint8_t RxBytesCounter = 0;    // receive bytes index
 __IO uint8_t lastCMD = 0;
 
 uint8_t Buffercmp8(uint8_t *pBuffer1, uint8_t *pBuffer2, uint8_t BufferLength);
@@ -106,38 +106,6 @@ void MX_I2C1_Init(void) {
 }
 
 /* USER CODE BEGIN 1 */
-void I2C_EvHandler() {
-    static uint8_t rwBytesCounter = 0;
-    /* Check ADDR flag value in ISR register */
-//    if (LL_I2C_IsActiveFlag_ADDR(I2C1)) {
-//        /* Verify the slave transfer direction, a read direction, Slave enters receiver mode */
-//        if (LL_I2C_GetTransferDirection(I2C1) == LL_I2C_DIRECTION_READ) {
-//            /* Enable Buffer Interrupts */
-//            LL_I2C_EnableIT_BUF(I2C1);
-//
-//            /* Clear ADDR flag value in ISR register */
-//            LL_I2C_ClearFlag_ADDR(I2C1);
-//        } else if (LL_I2C_GetTransferDirection(I2C1) == LL_I2C_DIRECTION_WRITE) {
-//            /* Enable Buffer Interrupts */
-//            LL_I2C_EnableIT_BUF(I2C1);
-//
-//            /* Clear ADDR flag value in ISR register */
-//            LL_I2C_ClearFlag_ADDR(I2C1);
-//        }
-//    }
-//    if (LL_I2C_IsActiveFlag_STOP(I2C1)) {
-//
-//    }
-//    if (LL_I2C_GetTransferDirection(I2C1) == LL_I2C_DIRECTION_READ) {
-//        while (!LL_I2C_IsActiveFlag_RXNE(I2C1));
-//        RxBuf[rwBytesCounter] = LL_I2C_ReceiveData8(I2C1);
-//        rwBytesCounter++;
-//    } else { /* LL_I2C_DIRECTION_WRITE */
-//
-//    }
-
-
-}
 
 /**
   * @brief  Function called from I2C IRQ Handler when TXE flag is set
@@ -171,7 +139,6 @@ void Slave_Ready_To_Transmit_Callback(void) {
 void Slave_Reception_Callback(void) {
     /* Read character in Receive Data register.
     RXNE flag is cleared by reading data in RXDR register */
-//    aSlaveReceiveBuffer[ubSlaveReceiveIndex] = LL_I2C_ReceiveData8(I2C1);
     lastCMD = LL_I2C_ReceiveData8(I2C1);
     RxBytesCounter++;
 
@@ -190,14 +157,11 @@ void Slave_Reception_Callback(void) {
             for (ubSlaveNbDataToTransmit = 0; ubSlaveNbDataToTransmit < 0x10; ++ubSlaveNbDataToTransmit) {
                 pSlaveTransmitBuffer[ubSlaveNbDataToTransmit] = ubSlaveNbDataToTransmit;
             }
-            __NOP();
             break;
         default:
             ubSlaveNbDataToTransmit = 0;
             break;
     }
-//    ubSlaveReceiveIndex++;
-    __NOP();
 }
 
 /**
@@ -208,21 +172,8 @@ void Slave_Reception_Callback(void) {
   * @retval None
   */
 void Slave_Complete_Callback(void) {
-    /* Check Command code & prepare data for transmit*/
-//    switch (aSlaveReceiveBuffer[0]) {
-//        case 0xA0:
-//            pSlaveTransmitBuffer[0] = 0xAA;
-//            break;
-//        case 0xB0:
-//            pSlaveTransmitBuffer[0] = 0xBB;
-//            break;
-//        case 0xC0:
-//            for (int i = 0; i < 0xF; ++i) {
-//                pSlaveTransmitBuffer[i] = 0;
-//            }
-//    }
-//    HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin, GPIO_PIN_RESET); // ON
-    __NOP();
+    /* Check Command code & prepare data for transmit (moved to receive callback)*/
+
     /* Clear and Reset process variables and arrays */
     ubSlaveReceiveIndex = 0;
     ubSlaveReceiveComplete = 0;
