@@ -20,9 +20,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_it.h"
-#include "i2c.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,8 +56,9 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_tim2_ch1;
 extern TIM_HandleTypeDef htim1;
-extern __IO uint8_t ubSlaveNbDataToTransmit;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -150,6 +151,19 @@ void DebugMon_Handler(void) {
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 channel5 global interrupt.
+  */
+void DMA1_Channel5_IRQHandler(void) {
+    /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
+
+    /* USER CODE END DMA1_Channel5_IRQn 0 */
+    HAL_DMA_IRQHandler(&hdma_tim2_ch1);
+    /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
+
+    /* USER CODE END DMA1_Channel5_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 update interrupt.
   */
 void TIM1_UP_IRQHandler(void) {
@@ -197,7 +211,7 @@ void I2C1_EV_IRQHandler(void) {
     }
         /* Check BTF flag value in ISR register DOESN'T WORK WITH NOSTRETCH ENABLED */
     else if (LL_I2C_IsActiveFlag_BTF(I2C1)) {
-        HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin, GPIO_PIN_RESET); // ON
+        HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET); // ON
         if (LL_I2C_GetTransferDirection(I2C1) == LL_I2C_DIRECTION_WRITE) {
             /* Send the next byte */
             /* Call function Slave Ready to Transmit Callback */

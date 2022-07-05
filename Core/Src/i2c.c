@@ -26,7 +26,6 @@
 #define CMD_3 0xC0
 #define CMD_4 0xF0
 
-#define CHANNELS 16
 
 LL_I2C_InitTypeDef I2C_InitStruct = {0};
 /**
@@ -37,7 +36,7 @@ LL_I2C_InitTypeDef I2C_InitStruct = {0};
 //        "1.2.3"};
 
 //uint8_t aSlaveReceiveBuffer[CHANNELS] = {0}; // receive buf
-uint8_t pSlaveTransmitBuffer[CHANNELS] = {0};   // transmit buf
+uint8_t pSlaveTransmitBuffer[CHANNELS*2] = {0};   // transmit buf
 __IO uint8_t ubSlaveNbDataToTransmit = 0;   // transmit bytes index
 //uint8_t       ubSlaveInfoIndex          = 0xFF;// sample data index
 //__IO uint8_t ubSlaveReceiveIndex = 0;   // receive bytes index
@@ -57,7 +56,7 @@ void MX_I2C1_Init(void) {
 
     /* USER CODE END I2C1_Init 0 */
 
-//    LL_I2C_InitTypeDef I2C_InitStruct = {0};
+    LL_I2C_InitTypeDef I2C_InitStruct = {0};
 
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -158,6 +157,11 @@ void Slave_Reception_Callback(void) {
                 pSlaveTransmitBuffer[ubSlaveNbDataToTransmit] = ubSlaveNbDataToTransmit;
             }
             break;
+        case (uint8_t) CMD_4:
+            for (int i = 0; i < 8; ++i) {
+                pSlaveTransmitBuffer[i * 2] = TicksSec[i] << 8;
+                pSlaveTransmitBuffer[i * 2 + 1] = (TicksSec[i] << 8) >> 8;
+            }
         default:
             ubSlaveNbDataToTransmit = 0;
             break;

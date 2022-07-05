@@ -19,7 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
 #include "i2c.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -87,9 +89,12 @@ int main(void) {
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+    MX_DMA_Init();
     MX_I2C1_Init();
+    MX_TIM2_Init();
     /* USER CODE BEGIN 2 */
-
+//    TIM2->CCR1 = 50;
+//    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
     /* USER CODE END 2 */
 
     /* Init scheduler */

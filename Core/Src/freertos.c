@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -158,9 +158,49 @@ void StartDefaultTask(void *argument) {
 /* USER CODE END Header_StartTicksPerSec */
 void StartTicksPerSec(void *argument) {
     /* USER CODE BEGIN StartTicksPerSec */
+    static uint8_t DutyCycle = 5;
+    static uint8_t Direction = 1;
+    TIM2->CCR1 = DutyCycle;
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
     /* Infinite loop */
+    /*
+     * CCR
+     * ---- x 100 = x%
+     * ARR
+     *        x%
+     * CCR = ---- x ARR
+     *       100
+     *
+     */
     for (;;) {
         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+        if (Direction > 0) {
+            if (DutyCycle < 90)
+                DutyCycle += 10;
+            else {
+                DutyCycle = 90;
+                Direction = 0;
+            }
+        } else {
+            if (DutyCycle > 20)
+                DutyCycle -= 10;
+            else {
+                DutyCycle = 20;
+                Direction = 1;
+            }
+
+        }
+//        TIM2->CCR1 = DutyCycle / 100 * (htim2.Init.Period + 1);
+        TIM2->CCR1 = DutyCycle;
+//        HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+        portENTER_CRITICAL();
+        for (int i = 0; i < CHANNELS; ++i) {
+            TicksSec[i] = TicksCounter[i];
+            TicksCounter[i] = 0;
+        }
+        portEXIT_CRITICAL();
+//        HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
         osDelay(1000 / portTICK_PERIOD_MS);
     }
     /* USER CODE END StartTicksPerSec */
@@ -168,6 +208,23 @@ void StartTicksPerSec(void *argument) {
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    switch (GPIO_Pin) {
+        case GPIO_PIN_12:
+            TicksCounter[0]++;
+            break;
+        case GPIO_PIN_13:
+            TicksCounter[1]++;
+            break;
+        case GPIO_PIN_14:
+            TicksCounter[2]++;
+            break;
+        case GPIO_PIN_15:
+            TicksCounter[3]++;
+            break;
+        default:
+            __NOP();
+            break;
+    }
+}
 /* USER CODE END Application */
-
