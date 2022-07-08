@@ -21,10 +21,12 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
+#include "main.h"
 #define CMD_1 0xA0
 #define CMD_2 0xB0
 #define CMD_3 0xC0
 #define CMD_4 0xF0
+#define PWM_W 0xD0
 
 
 LL_I2C_InitTypeDef I2C_InitStruct = {0};
@@ -43,6 +45,7 @@ __IO uint8_t ubSlaveNbDataToTransmit = 0;   // transmit bytes index
 //__IO uint8_t ubSlaveReceiveComplete = 0;
 __IO uint8_t RxBytesCounter = 0;    // receive bytes index
 __IO uint8_t lastCMD = 0;
+__IO uint8_t RxData = 0;
 
 uint8_t Buffercmp8(uint8_t *pBuffer1, uint8_t *pBuffer2, uint8_t BufferLength);
 
@@ -56,7 +59,7 @@ void MX_I2C1_Init(void) {
 
     /* USER CODE END I2C1_Init 0 */
 
-    LL_I2C_InitTypeDef I2C_InitStruct = {0};
+//    LL_I2C_InitTypeDef I2C_InitStruct = {0};
 
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -138,31 +141,41 @@ void Slave_Ready_To_Transmit_Callback(void) {
 void Slave_Reception_Callback(void) {
     /* Read character in Receive Data register.
     RXNE flag is cleared by reading data in RXDR register */
-    lastCMD = LL_I2C_ReceiveData8(I2C1);
+    RxData = LL_I2C_ReceiveData8(I2C1);
     RxBytesCounter++;
 
     /* Check Command code & prepare data for transmit*/
-    switch (lastCMD) {
+    switch (RxData) {
         case (uint8_t) CMD_1: {
+            lastCMD = RxData;
             pSlaveTransmitBuffer[0] = 0xAA;
             ubSlaveNbDataToTransmit = 1;
         }
             break;
         case (uint8_t) CMD_2:
+            lastCMD = RxData;
             pSlaveTransmitBuffer[0] = 0xBB;
             ubSlaveNbDataToTransmit = 1;
             break;
         case (uint8_t) CMD_3:
+            lastCMD = RxData;
             for (ubSlaveNbDataToTransmit = 0; ubSlaveNbDataToTransmit < 0x10; ++ubSlaveNbDataToTransmit) {
                 pSlaveTransmitBuffer[ubSlaveNbDataToTransmit] = ubSlaveNbDataToTransmit;
             }
             break;
         case (uint8_t) CMD_4:
+            lastCMD = RxData;
             for (int i = 0; i < 8; ++i) {
                 pSlaveTransmitBuffer[i * 2] = TicksSec[i] << 8;
                 pSlaveTransmitBuffer[i * 2 + 1] = (TicksSec[i] << 8) >> 8;
             }
+        case (uint8_t) PWM_W:
+            lastCMD = RxData;
+            ubSlaveNbDataToTransmit = 0;
+            break;
         default:
+            if (lastCMD == PWM_W)
+                PWM_DutyCycle = RxData;
             ubSlaveNbDataToTransmit = 0;
             break;
     }

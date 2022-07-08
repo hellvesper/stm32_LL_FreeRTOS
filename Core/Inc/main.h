@@ -77,8 +77,10 @@ void Error_Handler(void);
 #define SDA_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define CHANNELS 8
-uint16_t TicksCounter[CHANNELS];
-uint16_t TicksSec[CHANNELS];
+extern uint16_t TicksCounter[CHANNELS];
+extern uint16_t TicksSec[CHANNELS];
+extern __IO uint8_t RxData;
+extern __IO uint8_t PWM_DutyCycle;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
