@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "main.h"
+
 #define CMD_1 0xA0
 #define CMD_2 0xB0
 #define CMD_3 0xC0
@@ -38,7 +39,7 @@ LL_I2C_InitTypeDef I2C_InitStruct = {0};
 //        "1.2.3"};
 
 //uint8_t aSlaveReceiveBuffer[CHANNELS] = {0}; // receive buf
-uint8_t pSlaveTransmitBuffer[CHANNELS*2] = {0};   // transmit buf
+uint8_t pSlaveTransmitBuffer[CHANNELS * 2] = {0};   // transmit buf
 __IO uint8_t ubSlaveNbDataToTransmit = 0;   // transmit bytes index
 //uint8_t       ubSlaveInfoIndex          = 0xFF;// sample data index
 //__IO uint8_t ubSlaveReceiveIndex = 0;   // receive bytes index
@@ -93,7 +94,7 @@ void MX_I2C1_Init(void) {
     LL_I2C_DisableOwnAddress2(I2C1);
     LL_I2C_DisableGeneralCall(I2C1);
     I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
-    I2C_InitStruct.ClockSpeed = 100000;
+    I2C_InitStruct.ClockSpeed = 200000;
     I2C_InitStruct.DutyCycle = LL_I2C_DUTYCYCLE_2;
     I2C_InitStruct.OwnAddress1 = 144;
     I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
@@ -169,6 +170,8 @@ void Slave_Reception_Callback(void) {
                 pSlaveTransmitBuffer[i * 2] = TicksSec[i] << 8;
                 pSlaveTransmitBuffer[i * 2 + 1] = (TicksSec[i] << 8) >> 8;
             }
+            ubSlaveNbDataToTransmit = CHANNELS * 2;
+            break;
         case (uint8_t) PWM_W:
             lastCMD = RxData;
             ubSlaveNbDataToTransmit = 0;
